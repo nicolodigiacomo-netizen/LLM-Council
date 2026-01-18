@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Search Podcasts - Podcast to Kindle{% endblock %}
+
+{% block content %}
+<div class="search-section">
+    <div class="search-box">
+        <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Search podcasts (e.g., persuasion, influence, sales...)"
+            autocomplete="off"
+        >
+        <button id="search-btn" class="btn btn-primary">Search Podcasts</button>
+    </div>
+
+    <div class="quick-filters">
+        <p class="filter-label">Quick filters:</p>
+        <div class="filter-buttons">
+            {% for filter in quick_filters %}
+            <button class="btn btn-filter" data-query="{{ filter.query }}">
+                {{ filter.label }}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="results-section" class="results-section hidden">
+    <h2 class="section-title">Search Results</h2>
+    <p class="results-info">Showing podcasts with transcript availability</p>
+
+    <div id="results-container" class="results-container">
+        <!-- Results will be inserted here -->
+    </div>
+</div>
+
+<div id="episodes-section" class="episodes-section hidden">
+    <div class="section-header">
+        <button id="back-to-search" class="btn btn-secondary">← Back to Search</button>
+        <h2 class="section-title" id="podcast-title">Episodes</h2>
+    </div>
+
+    <div class="podcast-info" id="podcast-info">
+        <!-- Podcast info will be inserted here -->
+    </div>
+
+    <div class="episodes-list-header">
+        <p class="episodes-count" id="episodes-count"></p>
+        <div class="select-controls">
+            <button id="select-all" class="btn btn-small">Select All</button>
+            <button id="deselect-all" class="btn btn-small">Deselect All</button>
+        </div>
+    </div>
+
+    <div id="episodes-container" class="episodes-container">
+        <!-- Episodes will be inserted here -->
+    </div>
+
+    <div class="action-bar">
+        <div class="selection-info">
+            <span id="selected-count">0</span> episodes selected
+        </div>
+        <button id="process-btn" class="btn btn-primary" disabled>Process & Preview</button>
+    </div>
+</div>
+
+<div id="preview-section" class="preview-section hidden">
+    <div class="section-header">
+        <button id="back-to-episodes" class="btn btn-secondary">← Back to Episodes</button>
+        <h2 class="section-title">Preview & Download</h2>
+    </div>
+
+    <div class="preview-tabs">
+        <button class="tab-btn active" data-tab="preview">Preview</button>
+        <button class="tab-btn" data-tab="instructions">Kindle Instructions</button>
+    </div>
+
+    <div id="preview-content" class="preview-content">
+        <div class="tab-pane active" id="preview-tab">
+            <div id="markdown-preview" class="markdown-preview">
+                <!-- Preview content will be inserted here -->
+            </div>
+        </div>
+
+        <div class="tab-pane" id="instructions-tab">
+            <div class="instructions">
+                <h3>How to Send to Your Kindle</h3>
+
+                <h4>Method 1: Email (Recommended)</h4>
+                <ol>
+                    <li>Download the EPUB file below</li>
+                    <li>Email it as an attachment to your Kindle email address</li>
+                    <li>Your Kindle email looks like: <code>yourname@kindle.com</code></li>
+                    <li>Find it at: Amazon Account → Content & Devices → Preferences → Personal Document Settings</li>
+                    <li>The document will appear on your Kindle within minutes</li>
+                </ol>
+
+                <h4>Method 2: Send to Kindle App</h4>
+                <ol>
+                    <li>Download and install the "Send to Kindle" app from Amazon</li>
+                    <li>Download the EPUB file below</li>
+                    <li>Right-click the file → Send to Kindle</li>
+                </ol>
+
+                <h4>Method 3: USB Transfer</h4>
+                <ol>
+                    <li>Connect your Kindle to computer via USB</li>
+                    <li>Download the EPUB file below</li>
+                    <li>Copy the file to the "Documents" folder on your Kindle</li>
+                    <li>Safely eject and disconnect</li>
+                </ol>
+
+                <div class="tip-box">
+                    <strong>💡 Tip:</strong> EPUB format works best with newer Kindles. If you have an older Kindle,
+                    use the PDF option or convert EPUB to MOBI using Calibre software.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="download-section">
+        <div class="format-selector">
+            <label class="format-option">
+                <input type="radio" name="format" value="epub" checked>
+                <span class="format-label">EPUB (Recommended)</span>
+            </label>
+            <label class="format-option">
+                <input type="radio" name="format" value="pdf">
+                <span class="format-label">PDF</span>
+            </label>
+        </div>
+
+        <button id="download-btn" class="btn btn-primary btn-large">
+            Download for Kindle
+        </button>
+
+        <div id="download-result" class="download-result hidden">
+            <!-- Download link will appear here -->
+        </div>
+    </div>
+
+    <div class="session-info">
+        <p>📊 Session usage: <span id="session-usage">0/5</span> episodes processed</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize the app when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        window.podcastApp.init();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+flask==3.0.0
+requests==2.31.0
+beautifulsoup4==4.12.0
+youtube-transcript-api==0.6.1
+ebooklib==0.18
+markdown==3.5
+python-dotenv==1.0.0
+gunicorn==21.2.0
+lxml==4.9.3
+feedparser==6.0.10
+pillow==10.1.0
