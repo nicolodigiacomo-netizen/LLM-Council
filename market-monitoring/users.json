@@ -1,0 +1,1 @@
+{"admin": {"password": "scrypt:32768:8:1$pheKMPQ0uCDAkcit$fdb2308f65bf74c66c0818a706920c988b8a63d77d7907a05bb1990a0e8223df3d41bf3e09f16206cb6fff183d5c7380002ab1169bacfdd38c73047f3392da30", "email": "admin@example.com", "created_at": "2026-01-20T15:57:17.071794"}}
