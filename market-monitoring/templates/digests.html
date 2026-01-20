@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Digests - Financial News Monitoring{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Email Digests</h1>
+        <p class="mt-1 text-sm text-gray-500">View and download past digest reports</p>
+    </div>
+
+    <!-- Digests List -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        {% if digests %}
+        <ul class="divide-y divide-gray-200">
+            {% for digest in digests %}
+            <li class="hover:bg-gray-50">
+                <a href="{{ url_for('view_digest', filename=digest.name) }}" target="_blank" class="block px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center flex-1">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-file-alt text-3xl text-blue-500"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ digest.name }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {{ digest.modified.strftime('%B %d, %Y at %I:%M %p') }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-file mr-1"></i>
+                                    {{ (digest.size / 1024)|round(1) }} KB
+                                </p>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <i class="fas fa-external-link-alt text-gray-400"></i>
+                        </div>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-12 text-center">
+            <i class="fas fa-envelope-open-text text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No Digests Yet</h3>
+            <p class="text-gray-500 mb-6">Run the monitoring system to generate your first digest.</p>
+            <a href="{{ url_for('index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if digests %}
+    <div class="text-center text-sm text-gray-500">
+        {{ digests|length }} digest{% if digests|length != 1 %}s{% endif %} found
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

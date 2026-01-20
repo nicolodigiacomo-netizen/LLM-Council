@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}About - Financial News Monitoring{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="text-center">
+        <i class="fas fa-chart-line text-6xl text-blue-600 mb-4"></i>
+        <h1 class="text-4xl font-bold text-gray-900">Private Markets Monitor</h1>
+        <p class="mt-2 text-xl text-gray-600">Financial News Monitoring System</p>
+        <p class="mt-2 text-sm text-gray-500">Version {{ version }}</p>
+    </div>
+
+    <!-- Features -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">Automated News Scraping</h3>
+                    <p class="text-sm text-gray-600">Collects articles from Google News RSS feeds</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">Smart Prioritization</h3>
+                    <p class="text-sm text-gray-600">3-tier system based on funds, deal size, and relevance</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">SQLite Database</h3>
+                    <p class="text-sm text-gray-600">Stores articles with duplicate prevention</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">HTML Email Digests</h3>
+                    <p class="text-sm text-gray-600">Professional, mobile-friendly email reports</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">Web Dashboard</h3>
+                    <p class="text-sm text-gray-600">Modern interface for monitoring and configuration</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold">Multi-User Support</h3>
+                    <p class="text-sm text-gray-600">Secure authentication for team access</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset Classes -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Monitored Asset Classes</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for key, asset_class in asset_classes.items() %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900">{{ asset_class.name }}</h3>
+                <p class="text-xs text-gray-500 mt-1">{{ asset_class.keywords|length }} keywords monitored</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Priority Funds -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Tracked Priority Funds</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {% for fund in priority_funds %}
+            <div class="flex items-center p-3 border border-gray-200 rounded-lg">
+                <i class="fas fa-building text-blue-500 mr-2"></i>
+                <span class="text-sm font-medium">{{ fund }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Technology Stack</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <i class="fab fa-python text-4xl text-blue-600 mb-2"></i>
+                <p class="text-sm font-medium">Python 3.8+</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <i class="fas fa-flask text-4xl text-black mb-2"></i>
+                <p class="text-sm font-medium">Flask</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <i class="fas fa-database text-4xl text-gray-600 mb-2"></i>
+                <p class="text-sm font-medium">SQLite</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <i class="fas fa-newspaper text-4xl text-green-600 mb-2"></i>
+                <p class="text-sm font-medium">Google News</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Need Help?</h2>
+        <p class="text-gray-600 mb-4">Check the documentation or contact your administrator</p>
+        <div class="flex justify-center space-x-4">
+            <a href="https://github.com" target="_blank" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fab fa-github mr-2"></i>GitHub
+            </a>
+            <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fas fa-book mr-2"></i>Documentation
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

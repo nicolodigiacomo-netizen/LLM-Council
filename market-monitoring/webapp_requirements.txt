@@ -1,0 +1,16 @@
+# Web Application Additional Requirements
+# Install with: pip install -r webapp_requirements.txt
+
+# Core dependencies (already in requirements.txt)
+requests==2.31.0
+python-dotenv==1.0.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+python-dateutil==2.8.2
+
+# Flask web framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# For production deployment
+gunicorn==21.2.0

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration - Financial News Monitoring{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Configuration</h1>
+        <p class="mt-1 text-sm text-gray-500">View current system configuration</p>
+    </div>
+
+    <!-- General Settings -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-cog text-blue-600 mr-2"></i>General Settings
+        </h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border-l-4 border-blue-500 pl-4">
+                <dt class="text-sm font-medium text-gray-500">News Lookback Period</dt>
+                <dd class="text-2xl font-semibold text-gray-900">{{ lookback_hours }} hours</dd>
+            </div>
+            <div class="border-l-4 border-blue-500 pl-4">
+                <dt class="text-sm font-medium text-gray-500">Max Articles Per Asset Class</dt>
+                <dd class="text-2xl font-semibold text-gray-900">{{ max_articles }}</dd>
+            </div>
+            <div class="border-l-4 border-blue-500 pl-4">
+                <dt class="text-sm font-medium text-gray-500">Priority Deal Threshold</dt>
+                <dd class="text-2xl font-semibold text-gray-900">${{ deal_threshold }}M</dd>
+            </div>
+            <div class="border-l-4 border-blue-500 pl-4">
+                <dt class="text-sm font-medium text-gray-500">Fund Close Threshold</dt>
+                <dd class="text-2xl font-semibold text-gray-900">${{ fund_close_threshold }}M</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Asset Classes -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-chart-pie text-green-600 mr-2"></i>Monitored Asset Classes
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for key, asset_class in asset_classes.items() %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-2">{{ asset_class.name }}</h3>
+                <div class="flex flex-wrap gap-1">
+                    {% for keyword in asset_class.keywords[:10] %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ keyword }}
+                    </span>
+                    {% endfor %}
+                    {% if asset_class.keywords|length > 10 %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                        +{{ asset_class.keywords|length - 10 }} more
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Priority Funds -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-star text-yellow-600 mr-2"></i>Priority Funds
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+            Articles mentioning these funds receive Priority 1 classification
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {% for fund in priority_funds %}
+            <div class="flex items-center p-3 border border-gray-200 rounded-lg">
+                <i class="fas fa-building text-red-500 mr-3"></i>
+                <span class="font-medium text-gray-900">{{ fund }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Edit Configuration Note -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Note:</strong> To modify configuration, edit the <code>config.py</code> file directly.
+                    Changes will take effect on the next monitoring run.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Scraper -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-flask text-purple-600 mr-2"></i>Test News Scraper
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">
+            Test the news scraper with a custom query
+        </p>
+        <div class="flex gap-4">
+            <input type="text" id="test-query" placeholder="Enter search query (e.g., 'private equity')"
+                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            <button id="test-scraper-btn" class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+                <i class="fas fa-play mr-2"></i>Test
+            </button>
+        </div>
+        <div id="test-results" class="mt-4 hidden"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('test-scraper-btn').addEventListener('click', async function() {
+    const button = this;
+    const query = document.getElementById('test-query').value;
+    const resultsDiv = document.getElementById('test-results');
+
+    if (!query) {
+        alert('Please enter a search query');
+        return;
+    }
+
+    // Disable button
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Testing...';
+    resultsDiv.classList.add('hidden');
+
+    try {
+        const response = await fetch('{{ url_for("test_scraper") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: query })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            let html = `
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p class="text-sm font-medium text-green-800 mb-2">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Found ${data.count} articles
+                    </p>
+            `;
+
+            if (data.articles.length > 0) {
+                html += '<ul class="space-y-2 mt-3">';
+                data.articles.forEach(article => {
+                    html += `
+                        <li class="text-sm">
+                            <a href="${article.url}" target="_blank" class="text-blue-600 hover:underline">
+                                ${article.title}
+                            </a>
+                            <span class="text-gray-500 ml-2">- ${article.source}</span>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+            }
+
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        } else {
+            resultsDiv.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-sm text-red-800">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        Error: ${data.error}
+                    </p>
+                </div>
+            `;
+        }
+
+        resultsDiv.classList.remove('hidden');
+    } catch (error) {
+        resultsDiv.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-sm text-red-800">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    Error: ${error}
+                </p>
+            </div>
+        `;
+        resultsDiv.classList.remove('hidden');
+    } finally {
+        // Re-enable button
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-play mr-2"></i>Test';
+    }
+});
+</script>
+{% endblock %}

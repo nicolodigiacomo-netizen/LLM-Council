@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Financial News Monitoring{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header with Run Button -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-500">Monitor private markets news in real-time</p>
+        </div>
+        <button id="run-monitoring" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <i class="fas fa-play mr-2"></i>Run Monitoring Now
+        </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-newspaper text-3xl text-blue-500"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Articles</dt>
+                            <dd class="text-2xl font-bold text-gray-900">{{ stats.total_articles or 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-3xl text-green-500"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Last 24h</dt>
+                            <dd class="text-2xl font-bold text-gray-900">{{ stats.articles_last_24h or 0 }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-fire text-3xl text-red-500"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Priority 1</dt>
+                            <dd class="text-2xl font-bold text-gray-900">{{ stats.by_priority.get(1, 0) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-star text-3xl text-yellow-500"></i>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Priority 2</dt>
+                            <dd class="text-2xl font-bold text-gray-900">{{ stats.by_priority.get(2, 0) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority 1 Articles -->
+    {% if priority_1 %}
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-fire text-red-500 mr-2"></i>Priority 1 - Key Funds
+            </h2>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                {{ priority_1|length }} articles
+            </span>
+        </div>
+        <div class="space-y-4">
+            {% for article in priority_1 %}
+            <div class="priority-1 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-900">
+                    <a href="{{ article.url }}" target="_blank" class="hover:text-blue-600">
+                        {{ article.title }}
+                    </a>
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    <i class="fas fa-building mr-1"></i>{{ article.source }}
+                    {% if article.matched_priority_funds %}
+                    <span class="ml-2">
+                        {% for fund in article.matched_priority_funds[:3] %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-600 text-white mr-1">
+                            {{ fund }}
+                        </span>
+                        {% endfor %}
+                    </span>
+                    {% endif %}
+                </p>
+                {% if article.summary %}
+                <p class="text-sm text-gray-700 mt-2">{{ article.summary[:200] }}...</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('articles', priority=1) }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                View all Priority 1 articles <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Priority 2 Articles -->
+    {% if priority_2 %}
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">
+                <i class="fas fa-star text-yellow-500 mr-2"></i>Priority 2 - Major Deals
+            </h2>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                {{ priority_2|length }} articles
+            </span>
+        </div>
+        <div class="space-y-4">
+            {% for article in priority_2 %}
+            <div class="priority-2 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-900">
+                    <a href="{{ article.url }}" target="_blank" class="hover:text-blue-600">
+                        {{ article.title }}
+                    </a>
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    <i class="fas fa-building mr-1"></i>{{ article.source }}
+                </p>
+                {% if article.summary %}
+                <p class="text-sm text-gray-700 mt-2">{{ article.summary[:200] }}...</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('articles', priority=2) }}" class="text-blue-600 hover:text-blue-800 font-medium">
+                View all Priority 2 articles <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Articles Message -->
+    {% if not priority_1 and not priority_2 and not priority_3 %}
+    <div class="bg-white shadow rounded-lg p-12 text-center">
+        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-medium text-gray-900 mb-2">No Articles Yet</h3>
+        <p class="text-gray-500 mb-6">Run the monitoring system to start collecting news articles.</p>
+        <button onclick="document.getElementById('run-monitoring').click()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+            <i class="fas fa-play mr-2"></i>Run Monitoring Now
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Modal -->
+<div id="loading-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-6xl text-blue-600 mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Running Monitoring System</h3>
+            <p class="text-gray-600">Please wait while we collect the latest news...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('run-monitoring').addEventListener('click', async function() {
+    const button = this;
+    const modal = document.getElementById('loading-modal');
+
+    // Disable button and show modal
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running...';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    try {
+        const response = await fetch('{{ url_for("run_monitoring") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Monitoring completed successfully! Reloading page...');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error running monitoring: ' + error);
+    } finally {
+        // Re-enable button and hide modal
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-play mr-2"></i>Run Monitoring Now';
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+});
+</script>
+{% endblock %}
