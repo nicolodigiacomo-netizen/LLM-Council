@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Slides — Demo Presentation</title>
+
+    <!-- Fonts: Clash Display + Satoshi from Fontshare -->
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@700&f[]=satoshi@400;500;700&display=swap">
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (THEME: Neon Cyber)
+           Change these variables to retheme the entire deck
+           =========================================== */
+        :root {
+            /* Colors */
+            --bg-primary: #0a0f1c;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1a2235;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent: #00ffcc;
+            --accent-secondary: #ff00aa;
+            --accent-tertiary: #667eea;
+            --glow: rgba(0, 255, 204, 0.4);
+            --glow-secondary: rgba(255, 0, 170, 0.3);
+
+            /* Typography */
+            --font-display: 'Clash Display', sans-serif;
+            --font-body: 'Satoshi', sans-serif;
+
+            /* Spacing */
+            --slide-padding: clamp(2rem, 5vw, 6rem);
+
+            /* Animation */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --duration-normal: 0.6s;
+            --duration-slow: 1s;
+        }
+
+        /* ===========================================
+           RESET & BASE
+           =========================================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ===========================================
+           CUSTOM CURSOR
+           Neon-style dot that follows the mouse
+           =========================================== */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s var(--ease-out-expo),
+                        border-color 0.3s ease;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor.hovering {
+            transform: translate(-50%, -50%) scale(2.5);
+            border-color: var(--accent-secondary);
+            background: rgba(255, 0, 170, 0.1);
+        }
+
+        /* ===========================================
+           PARTICLE CANVAS
+           Full-screen animated particle background
+           =========================================== */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===========================================
+           GRID OVERLAY
+           Subtle grid pattern for tech aesthetic
+           =========================================== */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ===========================================
+           PROGRESS BAR
+           Shows scroll progress at the top
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            z-index: 1000;
+            transition: width 0.3s var(--ease-out-expo);
+            box-shadow: 0 0 10px var(--glow);
+        }
+
+        /* ===========================================
+           NAV DOTS
+           Slide indicators on the right side
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid var(--text-secondary);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-expo);
+            position: relative;
+        }
+
+        .nav-dot:hover {
+            border-color: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .nav-dot.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--glow);
+        }
+
+        .nav-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* ===========================================
+           SLIDE CONTAINER
+           Each section is a full-viewport slide
+           =========================================== */
+        .slide {
+            min-height: 100vh;
+            padding: var(--slide-padding);
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           .reveal — triggers on scroll via IntersectionObserver
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Stagger children for cascading entrance */
+        .slide.visible .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .slide.visible .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .slide.visible .reveal:nth-child(3) { transition-delay: 0.3s; }
+        .slide.visible .reveal:nth-child(4) { transition-delay: 0.4s; }
+        .slide.visible .reveal:nth-child(5) { transition-delay: 0.5s; }
+        .slide.visible .reveal:nth-child(6) { transition-delay: 0.6s; }
+
+        /* Scale variant */
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity var(--duration-slow) var(--ease-out-expo),
+                        transform var(--duration-slow) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal-scale {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Blur variant */
+        .reveal-blur {
+            opacity: 0;
+            filter: blur(12px);
+            transition: opacity 0.8s var(--ease-out-expo),
+                        filter 0.8s var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal-blur {
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        .display-xl {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+        }
+
+        .display-lg {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        .display-md {
+            font-family: var(--font-display);
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .body-lg {
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            line-height: 1.6;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+
+        .body-md {
+            font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        /* ===========================================
+           ACCENT & GLOW EFFECTS
+           =========================================== */
+        .accent {
+            color: var(--accent);
+        }
+
+        .accent-secondary {
+            color: var(--accent-secondary);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 30px var(--glow), 0 0 60px var(--glow);
+        }
+
+        .glow-box {
+            box-shadow: 0 0 30px var(--glow), inset 0 0 30px rgba(0, 255, 204, 0.05);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+
+        /* ===========================================
+           SLIDE 1: TITLE
+           Hero slide with glitch effect
+           =========================================== */
+        .title-slide {
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide .subtitle {
+            margin-top: 1.5rem;
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: var(--text-secondary);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .title-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--accent);
+            border-radius: 100px;
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            background: rgba(0, 255, 204, 0.05);
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .scroll-hint .arrow {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid var(--accent);
+            border-bottom: 2px solid var(--accent);
+            transform: rotate(45deg);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* Glitch effect on title */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            color: var(--accent);
+            z-index: -1;
+            animation: glitch-1 3s infinite linear;
+        }
+
+        .glitch::after {
+            color: var(--accent-secondary);
+            z-index: -2;
+            animation: glitch-2 3s infinite linear;
+        }
+
+        @keyframes glitch-1 {
+            0%, 92%, 100% { clip-path: inset(0); transform: translate(0); }
+            93% { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 2px); }
+            95% { clip-path: inset(50% 0 20% 0); transform: translate(3px, -1px); }
+            97% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 3px); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 94%, 100% { clip-path: inset(0); transform: translate(0); }
+            95% { clip-path: inset(10% 0 70% 0); transform: translate(4px, -2px); }
+            97% { clip-path: inset(40% 0 30% 0); transform: translate(-3px, 1px); }
+            99% { clip-path: inset(70% 0 10% 0); transform: translate(2px, -3px); }
+        }
+
+        /* ===========================================
+           SLIDE 2: FEATURES
+           =========================================== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            max-width: 1100px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 255, 204, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ===========================================
+           SLIDE 3: THEMES SHOWCASE
+           =========================================== */
+        .themes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-top: 2.5rem;
+            max-width: 1100px;
+        }
+
+        .theme-card {
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-6px) scale(1.02);
+        }
+
+        .theme-name {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .theme-vibe {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* Individual theme colors */
+        .theme-neon { background: linear-gradient(135deg, #0a0f1c, #111827); border: 1px solid rgba(0,255,204,0.3); color: #00ffcc; }
+        .theme-midnight { background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(59,130,246,0.3); color: #3b82f6; }
+        .theme-space { background: linear-gradient(135deg, #030712, #111827); border: 1px solid rgba(129,140,248,0.3); color: #818cf8; }
+        .theme-terminal { background: linear-gradient(135deg, #0d1117, #161b22); border: 1px solid rgba(57,211,83,0.3); color: #39d353; }
+        .theme-paper { background: linear-gradient(135deg, #faf9f7, #f5f3ef); border: 1px solid #e5e2db; color: #c41e3a; }
+        .theme-swiss { background: linear-gradient(135deg, #ffffff, #f7f7f7); border: 1px solid #ddd; color: #ff3300; }
+        .theme-pastel { background: linear-gradient(135deg, #fef3f2, #fef9f5); border: 1px solid rgba(244,114,182,0.3); color: #f472b6; }
+        .theme-editorial { background: linear-gradient(135deg, #fffbf5, #f5efe6); border: 1px solid #e5ddd0; color: #b45309; }
+        .theme-brutalist { background: #fff; border: 3px solid #000; color: #000; }
+        .theme-gradient { background: linear-gradient(135deg, #667eea, #764ba2); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+
+        /* ===========================================
+           SLIDE 4: HOW IT WORKS
+           =========================================== */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 3rem;
+            max-width: 700px;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--accent);
+            line-height: 1;
+            min-width: 50px;
+            text-shadow: 0 0 20px var(--glow);
+        }
+
+        .step-content h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ===========================================
+           SLIDE 5: CODE EXAMPLE
+           =========================================== */
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            max-width: 750px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'HTML';
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .code-block pre {
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .code-block .tag { color: var(--accent-secondary); }
+        .code-block .attr { color: var(--accent-tertiary); }
+        .code-block .val { color: var(--accent); }
+        .code-block .comment { color: #4a5568; font-style: italic; }
+
+        /* ===========================================
+           SLIDE 6: PHILOSOPHY
+           =========================================== */
+        .philosophy-list {
+            list-style: none;
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 700px;
+        }
+
+        .philosophy-list li {
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .philosophy-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--glow);
+        }
+
+        .philosophy-list li strong {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .philosophy-list li span {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ===========================================
+           SLIDE 7: CLOSING / CTA
+           =========================================== */
+        .closing-slide {
+            align-items: center;
+            text-align: center;
+        }
+
+        .closing-slide .cta-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 1rem 2.5rem;
+            border: 2px solid var(--accent);
+            border-radius: 100px;
+            color: var(--accent);
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .closing-slide .cta-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            transform: translateY(100%);
+            transition: transform 0.3s var(--ease-out-expo);
+            z-index: -1;
+        }
+
+        .closing-slide .cta-link:hover {
+            color: var(--bg-primary);
+        }
+
+        .closing-slide .cta-link:hover::before {
+            transform: translateY(0);
+        }
+
+        /* ===========================================
+           KEYBOARD HINT
+           =========================================== */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+
+        .keyboard-hint:hover { opacity: 1; }
+
+        .key {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ===========================================
+           REDUCED MOTION
+           Respects user accessibility preferences
+           =========================================== */
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .reveal-scale, .reveal-blur {
+                transition: opacity 0.3s ease;
+                transform: none;
+                filter: none;
+            }
+            .glitch::before, .glitch::after { animation: none; }
+            .scroll-hint { animation: none; }
+            html { scroll-behavior: auto; }
+        }
+
+        /* ===========================================
+           MOBILE RESPONSIVE
+           Simplified layout for small screens
+           =========================================== */
+        @media (max-width: 768px) {
+            .nav-dots, .keyboard-hint, .cursor, .cursor-dot {
+                display: none;
+            }
+            body { cursor: auto; }
+            .features-grid { grid-template-columns: 1fr; }
+            .themes-container { grid-template-columns: repeat(2, 1fr); }
+            .step { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom cursor elements -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Particle system canvas -->
+    <canvas id="particles"></canvas>
+
+    <!-- Subtle grid overlay -->
+    <div class="grid-overlay"></div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation dots (generated by JS) -->
+    <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+    <!-- Keyboard hint -->
+    <div class="keyboard-hint">
+        <span class="key">&larr;</span>
+        <span class="key">&rarr;</span>
+        <span>or scroll to navigate</span>
+    </div>
+
+    <!-- ==========================================
+         SLIDE 1: TITLE
+         ========================================== -->
+    <section class="slide title-slide" data-label="Title">
+        <div class="title-badge reveal">Demo Presentation</div>
+        <h1 class="display-xl reveal glitch" data-text="Frontend Slides">Frontend Slides</h1>
+        <p class="subtitle reveal">Zero-dependency, animation-rich HTML presentations</p>
+        <div class="scroll-hint reveal">
+            <span>Scroll</span>
+            <div class="arrow"></div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 2: KEY FEATURES
+         ========================================== -->
+    <section class="slide" data-label="Features">
+        <h2 class="display-lg reveal">Why <span class="accent">Frontend Slides</span>?</h2>
+        <p class="body-lg reveal">Everything you need. Nothing you don't.</p>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">&#9889;</div>
+                <h3>Zero Dependencies</h3>
+                <p>Single HTML file with inline CSS and JS. No npm, no build step, no frameworks. Opens anywhere.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">&#127912;</div>
+                <h3>Show, Don't Tell</h3>
+                <p>Can't describe your style? Pick from visual previews instead. We generate 3 options, you choose.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">&#128640;</div>
+                <h3>Anti-AI Slop</h3>
+                <p>No generic purple gradients. No Inter font. Every deck feels custom-crafted with distinctive style.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 3: 10 THEMES
+         ========================================== -->
+    <section class="slide" data-label="Themes">
+        <h2 class="display-lg reveal">10 Curated <span class="accent-secondary">Themes</span></h2>
+        <p class="body-lg reveal">Dark, light, and specialty — each with its own personality.</p>
+        <div class="themes-container">
+            <div class="theme-card theme-neon reveal"><div class="theme-name">Neon Cyber</div><div class="theme-vibe">Futuristic</div></div>
+            <div class="theme-card theme-midnight reveal"><div class="theme-name">Midnight Executive</div><div class="theme-vibe">Corporate</div></div>
+            <div class="theme-card theme-space reveal"><div class="theme-name">Deep Space</div><div class="theme-vibe">Cinematic</div></div>
+            <div class="theme-card theme-terminal reveal"><div class="theme-name">Terminal Green</div><div class="theme-vibe">Developer</div></div>
+            <div class="theme-card theme-paper reveal"><div class="theme-name">Paper & Ink</div><div class="theme-vibe">Editorial</div></div>
+            <div class="theme-card theme-swiss reveal"><div class="theme-name">Swiss Modern</div><div class="theme-vibe">Bauhaus</div></div>
+            <div class="theme-card theme-pastel reveal"><div class="theme-name">Soft Pastel</div><div class="theme-vibe">Playful</div></div>
+            <div class="theme-card theme-editorial reveal"><div class="theme-name">Warm Editorial</div><div class="theme-vibe">Magazine</div></div>
+            <div class="theme-card theme-brutalist reveal"><div class="theme-name">Brutalist</div><div class="theme-vibe">Raw</div></div>
+            <div class="theme-card theme-gradient reveal"><div class="theme-name">Gradient Wave</div><div class="theme-vibe">SaaS Modern</div></div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 4: HOW IT WORKS
+         ========================================== -->
+    <section class="slide" data-label="How It Works">
+        <h2 class="display-lg reveal">How It <span class="accent">Works</span></h2>
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                    <h3>Describe Your Content</h3>
+                    <p>Share your topic, bullet points, or rough notes. The skill asks about purpose and audience.</p>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                    <h3>Discover Your Style</h3>
+                    <p>Pick the feeling you want — then choose from 3 generated visual previews. No design knowledge needed.</p>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                    <h3>Generate & Refine</h3>
+                    <p>A complete HTML presentation is generated. Request tweaks until it's perfect. One file, zero dependencies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 5: CODE
+         ========================================== -->
+    <section class="slide" data-label="Output">
+        <h2 class="display-lg reveal">What You <span class="accent-secondary">Get</span></h2>
+        <p class="body-lg reveal">A single, self-contained HTML file with everything inlined.</p>
+        <div class="code-block reveal-scale">
+            <pre><span class="comment">&lt;!-- One file. Zero dependencies. --&gt;</span>
+<span class="tag">&lt;html</span> <span class="attr">lang=</span><span class="val">"en"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;head&gt;</span>
+    <span class="comment">&lt;!-- Fonts, CSS variables, all styles inline --&gt;</span>
+    <span class="tag">&lt;style&gt;</span> <span class="val">/* themes, animations, responsive */</span> <span class="tag">&lt;/style&gt;</span>
+  <span class="tag">&lt;/head&gt;</span>
+  <span class="tag">&lt;body&gt;</span>
+    <span class="tag">&lt;section</span> <span class="attr">class=</span><span class="val">"slide"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;h1</span> <span class="attr">class=</span><span class="val">"reveal"</span><span class="tag">&gt;</span>Your Content<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;/section&gt;</span>
+    <span class="tag">&lt;script&gt;</span> <span class="val">/* navigation, animations, interactions */</span> <span class="tag">&lt;/script&gt;</span>
+  <span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></pre>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 6: PHILOSOPHY
+         ========================================== -->
+    <section class="slide" data-label="Philosophy">
+        <h2 class="display-lg reveal">Design <span class="accent">Philosophy</span></h2>
+        <ul class="philosophy-list">
+            <li class="reveal">
+                <strong>You don't need to be a designer.</strong>
+                <span>You just need to react to what you see. Visual exploration beats abstract choices.</span>
+            </li>
+            <li class="reveal">
+                <strong>Dependencies are debt.</strong>
+                <span>A single HTML file works in 10 years. A React project from 2019? Good luck.</span>
+            </li>
+            <li class="reveal">
+                <strong>Generic is forgettable.</strong>
+                <span>Every presentation should feel custom-crafted, not template-generated.</span>
+            </li>
+            <li class="reveal">
+                <strong>Comments are kindness.</strong>
+                <span>Code explains itself to future-you, or anyone else who opens it.</span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ==========================================
+         SLIDE 7: CLOSING
+         ========================================== -->
+    <section class="slide closing-slide" data-label="Get Started">
+        <h2 class="display-xl reveal-blur glow-text">Start <span class="accent">Building</span></h2>
+        <p class="body-lg reveal" style="text-align:center; max-width: 500px;">
+            Install the skill, describe your presentation, and let the magic happen.
+        </p>
+        <a href="https://github.com/zarazhangrui/frontend-slides" class="cta-link reveal" target="_blank" rel="noopener">
+            View on GitHub
+        </a>
+    </section>
+
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           Handles navigation, scroll tracking,
+           intersection observation, and interactions.
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.isScrolling = false;
+
+                this.initObserver();
+                this.initNavDots();
+                this.initKeyboard();
+                this.initTouch();
+                this.initWheel();
+                this.initProgressBar();
+                this.initCursor();
+            }
+
+            /* -------------------------------------------
+               INTERSECTION OBSERVER
+               Adds .visible class when slides enter view
+               ------------------------------------------- */
+            initObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            this.currentSlide = index;
+                            this.updateNavDots();
+                            this.updateProgressBar();
+                        }
+                    });
+                }, { threshold: 0.4 });
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            /* -------------------------------------------
+               NAVIGATION DOTS
+               Creates clickable dot indicators
+               ------------------------------------------- */
+            initNavDots() {
+                const container = document.getElementById('navDots');
+                this.slides.forEach((slide, i) => {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                    dot.setAttribute('data-label', slide.dataset.label || `Slide ${i + 1}`);
+                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    container.appendChild(dot);
+                });
+            }
+
+            updateNavDots() {
+                document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === this.currentSlide);
+                });
+            }
+
+            /* -------------------------------------------
+               PROGRESS BAR
+               Updates width based on scroll position
+               ------------------------------------------- */
+            initProgressBar() {
+                window.addEventListener('scroll', () => this.updateProgressBar());
+            }
+
+            updateProgressBar() {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            /* -------------------------------------------
+               KEYBOARD NAVIGATION
+               Arrow keys and space to navigate slides
+               ------------------------------------------- */
+            initKeyboard() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault();
+                        this.nextSlide();
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.prevSlide();
+                    }
+                });
+            }
+
+            /* -------------------------------------------
+               TOUCH / SWIPE
+               Detects vertical swipe gestures
+               ------------------------------------------- */
+            initTouch() {
+                let touchStartY = 0;
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                });
+                document.addEventListener('touchend', (e) => {
+                    const diff = touchStartY - e.changedTouches[0].clientY;
+                    if (Math.abs(diff) > 60) {
+                        diff > 0 ? this.nextSlide() : this.prevSlide();
+                    }
+                });
+            }
+
+            /* -------------------------------------------
+               MOUSE WHEEL
+               Throttled wheel navigation between slides
+               ------------------------------------------- */
+            initWheel() {
+                let wheelTimeout;
+                document.addEventListener('wheel', (e) => {
+                    clearTimeout(wheelTimeout);
+                    wheelTimeout = setTimeout(() => {
+                        if (e.deltaY > 30) this.nextSlide();
+                        else if (e.deltaY < -30) this.prevSlide();
+                    }, 50);
+                }, { passive: true });
+            }
+
+            /* -------------------------------------------
+               SLIDE NAVIGATION
+               Core methods to move between slides
+               ------------------------------------------- */
+            goToSlide(index) {
+                if (index >= 0 && index < this.slides.length) {
+                    this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                    this.currentSlide = index;
+                    this.updateNavDots();
+                }
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.slides.length - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            /* -------------------------------------------
+               CUSTOM CURSOR
+               Neon cursor that follows mouse movement
+               using lerp for smoothness
+               ------------------------------------------- */
+            initCursor() {
+                const cursor = document.querySelector('.cursor');
+                const dot = document.querySelector('.cursor-dot');
+                if (!cursor || !dot) return;
+
+                let mouseX = 0, mouseY = 0;
+                let cursorX = 0, cursorY = 0;
+
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    dot.style.left = mouseX + 'px';
+                    dot.style.top = mouseY + 'px';
+                });
+
+                // Smooth follow with lerp
+                const animate = () => {
+                    cursorX += (mouseX - cursorX) * 0.15;
+                    cursorY += (mouseY - cursorY) * 0.15;
+                    cursor.style.left = cursorX + 'px';
+                    cursor.style.top = cursorY + 'px';
+                    requestAnimationFrame(animate);
+                };
+                animate();
+
+                // Hover state on interactive elements
+                const interactives = document.querySelectorAll('a, button, .feature-card, .theme-card');
+                interactives.forEach(el => {
+                    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+                    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+                });
+            }
+        }
+
+        /* ===========================================
+           PARTICLE SYSTEM
+           Floating dots with connection lines
+           for the neon cyber aesthetic
+           =========================================== */
+        class ParticleSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: null, y: null };
+                this.init();
+            }
+
+            init() {
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                const count = window.innerWidth < 768 ? 25 : 50;
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.4,
+                        vy: (Math.random() - 0.5) * 0.4,
+                        radius: Math.random() * 2 + 0.5
+                    });
+                }
+                this.animate();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Wrap around screen edges
+                    if (p.x < 0) p.x = this.canvas.width;
+                    if (p.x > this.canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.height;
+                    if (p.y > this.canvas.height) p.y = 0;
+
+                    // Draw particle
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = 'rgba(0, 255, 204, 0.4)';
+                    this.ctx.fill();
+                });
+
+                // Draw connection lines between nearby particles
+                for (let i = 0; i < this.particles.length; i++) {
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        const dx = this.particles[i].x - this.particles[j].x;
+                        const dy = this.particles[i].y - this.particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 150) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+                            this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+                            this.ctx.strokeStyle = `rgba(0, 255, 204, ${0.08 * (1 - dist / 150)})`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        /* ===========================================
+           INITIALIZE EVERYTHING
+           =========================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+            new ParticleSystem(document.getElementById('particles'));
+        });
+    </script>
+</body>
+</html>
